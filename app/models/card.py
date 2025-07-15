@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, DateTime, Boolean
 from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
 
 from app.db.database import Base
 
@@ -16,6 +17,12 @@ class Card(Base):
     buy = Column(Boolean, default=True)  # Indicates if the miner is available for purchase
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    user_cards = relationship(
+        "UserCard",               # association object
+        back_populates="card",    # <-- must match attr below
+        cascade="all, delete-orphan"
+    )
 
     def __repr__(self):
         return f"<Card(id={self.id}, name={self.name})>"

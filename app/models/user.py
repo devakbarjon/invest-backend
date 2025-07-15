@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, ARRAY, BigInteger, Numeric
+from sqlalchemy import Column, Integer, String, DateTime, BigInteger, Numeric
 from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
 
 from app.db.database import Base
 
@@ -29,6 +30,12 @@ class User(Base):
     deposit_stars = Column(BigInteger, default=0)  # Deposit amount in Stars
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    user_cards = relationship(
+        "UserCard",
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )
 
     def __init__(self, 
                  user_id: int, 

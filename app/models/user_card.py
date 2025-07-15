@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, ARRAY, BigInteger, Numeric, ForeignKey
+from sqlalchemy import Column, Integer, DateTime, Boolean, BigInteger, Numeric, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -16,8 +16,8 @@ class UserCard(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
-    user = relationship("User", back_populates="cards")
-    card = relationship("Miner", back_populates="users")
+    user = relationship("User", back_populates="user_cards")
+    card = relationship("Card", back_populates="user_cards")
 
     def __repr__(self):
         return f"<UserCard(user_id={self.user_id}, card_id={self.card_id})>"
