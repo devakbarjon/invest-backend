@@ -3,12 +3,12 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload, joinedload
 from app.db.database import get_db
-from app.models.schemas.tasks import TaskOut, TaskBase
+from app.models.schemas.tasks import TaskOut, TaskCheck
 from app.models.task import Task
 
 router = APIRouter(
-    prefix="/api/v1/users",
-    tags=["Users"]
+    prefix="/api/v1/tasks",
+    tags=["Tasks"]
 )
 
 # Get all tasks for user
@@ -21,6 +21,10 @@ async def get_tasks(
     Return all tasks.
     Add `completed=True` if this user's id is in the `users` array column.
     """
+
+    if not x_init_data:
+        raise HTTPException(status_code=400, detail="X-init-data header is required")
+    
     result = await db.execute(select(Task))
     tasks: list[Task] = result.scalars().all()
 
@@ -29,23 +33,27 @@ async def get_tasks(
 
     return tasks
 
-# Get single post by ID
-@router.get("/{task_id}", response_model=PostOut)
-async def get_post(task_id: int, request: Request, db: AsyncSession = Depends(get_db)):
-    stmt = select(Post).options(selectinload(Post.comments)).filter(Post.id == post_id)
+# Check is task completed for user
+@router.post("/{task_id}", response_model=TaskCheck)
+async def check_task(task_id: int, db: AsyncSession = Depends(get_db), 
+                     x_init_data: int = Header(..., alias="X-init-data")):
+    """
+    Check if the task is completed by the user.
+    If not, add the user's id to the `users` array column.
+    """
     
-    result = await db.execute(stmt)
-    post = result.scalars().first()
+    if not x_init_data:
+        raise HTTPException(status_code=400, detail="X-init-data header is required")
 
-    if not post:
-        raise HTTPException(status_code=404, detail="Post not found")
+    task = await db.get(Task, task_id)
 
-    if anon_id not in post.viewed_users:
-        post.views += 1
-        post.viewed_users = post.viewed_users + [anon_id]
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    if x_init_data not in (task.users):
+        task.users.append(x_init_data)
+        await db.commit()
+    else:
+        raise HTTPException(status_code=400, detail="Task already completed.")
     
-    db.add(post)
-    await db.commit()
-    await db.refresh(post)
-
-    return post
+    return {"id": task.id, "completed": True}

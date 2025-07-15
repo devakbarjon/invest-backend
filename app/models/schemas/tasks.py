@@ -22,4 +22,13 @@ class TaskOut(TaskBase):
 
     class Config:
         orm_mode = True
-        use_enum_values = True  # If using enums in your model, this will serialize them as their values
+        use_enum_values = True
+
+
+class TaskCheck(BaseModel):
+    id: int
+    completed: bool
+
+    class Config:
+        orm_mode = True
+        use_enum_values = True
