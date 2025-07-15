@@ -1,7 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, Header, Request
+from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload, joinedload
 from app.db.database import get_db
 from app.models.schemas.tasks import TaskOut, TaskCheck
 from app.models.task import Task
@@ -22,9 +21,6 @@ async def get_tasks(
     Add `completed=True` if this user's id is in the `users` array column.
     """
 
-    if not x_init_data:
-        raise HTTPException(status_code=400, detail="X-init-data header is required")
-    
     result = await db.execute(select(Task))
     tasks: list[Task] = result.scalars().all()
 
@@ -41,19 +37,16 @@ async def check_task(task_id: int, db: AsyncSession = Depends(get_db),
     Check if the task is completed by the user.
     If not, add the user's id to the `users` array column.
     """
-    
-    if not x_init_data:
-        raise HTTPException(status_code=400, detail="X-init-data header is required")
 
     task = await db.get(Task, task_id)
 
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
 
-    if x_init_data not in (task.users):
+    if x_init_data not in (task.users or []):
         task.users.append(x_init_data)
         await db.commit()
     else:
         raise HTTPException(status_code=400, detail="Task already completed.")
     
-    return {"id": task.id, "completed": True}
+    return TaskCheck(id=task.id, completed=True)
