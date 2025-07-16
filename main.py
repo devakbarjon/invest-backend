@@ -2,22 +2,24 @@ from contextlib import asynccontextmanager
 from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.db.database import engine, Base
+from app.db.database import engine, Base, fake_cards_generator, get_db
 from app.logging_config import logger
 from app.api.v1 import tasks
+from app.api.v1 import users
 
 async def init_models():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
         logger.info("Database models initialized.")
-        print("Database models initialized.")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_models()  # Initialize database models
+    async for db in get_db():
+        await fake_cards_generator(db=db)
     yield 
-    print("Shutting down...")
+    logger.info("Shutting down...")
 
 
 app = FastAPI(lifespan=lifespan)
@@ -25,6 +27,11 @@ app = FastAPI(lifespan=lifespan)
 app.include_router(
     tasks.router, tags=["Tasks"]
 )
+
+app.include_router(
+    users.router, tags=["Users"]
+)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

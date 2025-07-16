@@ -6,6 +6,7 @@ ENV = os.getenv("ENV", "development")  # default to development
 class Settings(BaseSettings):
     app_name: str = "FastAPI Application"
     database_url: str
+    bot_token: str
     secret_key: str
     environment: str = ENV
     algorithm: str = "HS256"

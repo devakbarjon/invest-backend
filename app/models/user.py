@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, BigInteger, Numeric
+from sqlalchemy import Column, Identity, Integer, String, DateTime, BigInteger, Numeric
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 
@@ -8,8 +8,8 @@ from app.db.database import Base
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(BigInteger, nullable=False, unique=True)  # Unique user identifier
+    id = Column(Integer, Identity(always=False), unique=True)
+    user_id = Column(BigInteger, primary_key=True, index=True, unique=True)  # Unique user identifier
     login = Column(String, nullable=True)
     lang = Column(String, nullable=True)  # User's language [ru, en, ua]
     balance_ton = Column(Numeric(precision=20, scale=4), default=0.0)  # User's TON balance
@@ -55,4 +55,4 @@ class User(Base):
         self.referrer_id_level3 = referrer_id_level3
 
     def __repr__(self):
-        return f"<User(id={self.id}, username={self.username})>"
+        return f"<User(id={self.id}, username={self.login})>"

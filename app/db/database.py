@@ -19,3 +19,25 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
             yield session
         finally:
             await session.close()
+
+
+
+async def fake_cards_generator(db: AsyncSession) -> None:
+    pass
+    # from app.models.card import Card
+    # # Example of creating fake cards and user cards
+    # for i in range(1, 8):
+    #     card = Card(
+    #         name=f"Card {i}",
+    #         image=f"https://example.com/card_{i}.png",
+    #         cost=i * 10,
+    #         cycle_reward=0.01 * i,
+    #         cycle_time=4 * i,
+    #         frozen=False,
+    #         buy=True 
+    #     )
+    #     db.add(card)
+    #     await db.commit()
+    #     await db.refresh(card)
+    
+    # await db.commit()
