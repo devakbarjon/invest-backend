@@ -70,3 +70,9 @@ class UserOut(BaseModel):
     class Config:
         orm_mode = True
         json_encoders = {Decimal: lambda v: format(v, "f")}
+
+
+class UserIn(BaseModel):
+    user_id: int
+    initData: str
+    start_param: str | int | None = 0

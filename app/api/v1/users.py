@@ -3,13 +3,15 @@ from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db
-from app.models.schemas.users import UserOut
+from app.models.schemas.users import UserIn, UserOut
 from app.models.user import User
 from app.models.card import Card
 from app.models.user_card import UserCard
 from app.services.bot.bot_auth import authenticate_user
+from app.core.config import settings
 
 from app.logging_config import logger
+from app.services.bot.bot_check_sub import check_bot_subscription
 
 router = APIRouter(
     prefix="/api/v1/users",
@@ -17,19 +19,18 @@ router = APIRouter(
 )
 
 
-@router.get("/", response_model=UserOut)
+@router.post("/", response_model=UserOut)
 async def get_user(
-    user_id: int,
-    initData: str,
-    start_param: str | int | None = 0,
+    user_in: UserIn,
     db: AsyncSession = Depends(get_db)
 ):
-    """
-    Return user details by user_id.
-    """
+    user_id = user_in.user_id
+    init_data = user_in.initData
+    start_param = user_in.start_param
+    
     user_data = {}
     user = await authenticate_user(
-        init_data=initData,
+        init_data=init_data,
         start_param=start_param,
         user_id=user_id
     )
@@ -70,7 +71,7 @@ async def get_user(
     user_data["referral_income_level3"] = str(user.referral_income_level3)
     user_data["withdrawal_ton"] = str(user.withdrawal_ton)
     user_data["deposit_ton"] = str(user.deposit_ton)
-    user_data["date"] = datetime.now().isoformat()
-    user_data["sub_channel"] = 0
+    user_data["date"] = datetime.now().isoformat().split(".")[0].replace("T", " ")
+    user_data["sub_channel"] = await check_bot_subscription(user_id, settings.bot_channel_id)
 
     return UserOut.model_validate(user_data)
