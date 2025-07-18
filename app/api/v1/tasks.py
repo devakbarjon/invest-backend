@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Header
-from sqlalchemy import select
+from sqlalchemy import any_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db
 from app.models.schemas.tasks import TaskCheckIn, TaskOut, TaskCheck, TaskCompleted
@@ -96,7 +96,7 @@ async def get_tasks_user(
     user: User = user.get("user")
 
     result = await db.execute(
-        select(Task).where(Task.users.contains([user_id]))
+        select(Task).where(user_id == any_(Task.users))
     )
     
     tasks: list[Task] = result.scalars().all()

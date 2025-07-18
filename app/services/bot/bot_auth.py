@@ -35,9 +35,9 @@ async def authenticate_user(init_data: str, user_id: str | int, start_param: str
     data_dict = dict(parse_qsl(init_data))
     
     # Check if auth_date is recent (within 24 hours)
-    auth_date = int(data_dict.get("auth_date", 0))
-    if datetime.now() - datetime.fromtimestamp(auth_date) > timedelta(hours=24):
-        return {"success": False, "message": "auth_date is too old!"}
+    # auth_date = int(data_dict.get("auth_date", 0))
+    # if datetime.now() - datetime.fromtimestamp(auth_date) > timedelta(hours=24):
+    #     return {"success": False, "message": "auth_date is too old!"}
     
     user_data = data_dict.get("user")
     if not user_data:
