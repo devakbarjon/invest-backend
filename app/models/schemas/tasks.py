@@ -16,7 +16,6 @@ class TaskBase(BaseModel):
 class TaskOut(TaskBase):
     id: int
     status: bool = Field(True, example=True)
-    completed: bool = Field(False, example=False)  # Indicates if the task is completed
     created_at: datetime
     updated_at: Optional[datetime]
 
@@ -25,10 +24,11 @@ class TaskOut(TaskBase):
         use_enum_values = True
 
 
-class TaskCheck(BaseModel):
-    id: int
-    completed: bool
+class TaskCheckIn(TaskBase):
+    user_id: int = Field(..., example=1)
+    initData: str
+    id: int = Field(..., example=1, description="Task ID to check")
 
-    class Config:
-        orm_mode = True
-        use_enum_values = True
+class TaskCheck(BaseModel):
+    id: int = Field(..., example=1)
+    status: int = Field(1, example=1)

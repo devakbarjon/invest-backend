@@ -87,7 +87,7 @@ class UserBuyCardIn(BaseModel):
     initData: str
 
 class UserBuyCardOut(BaseModel):
-    success: int = Field(1, example=1)
+    status: int = Field(1, example=1)
     message: str = Field("Card purchased successfully", example="Card purchased successfully")
     time: datetime
     new_time: datetime
@@ -99,10 +99,40 @@ class UserBuyCardOut(BaseModel):
 
 
 class UserActiveCardOut(BaseModel):
-    success: int = Field(1, example=1)
+    status: int = Field(1, example=1)
     message: str = Field("Card activated successfully", example="Card activated successfully")
     time: datetime
     new_time: datetime
+
+    class Config:
+        json_encoders = {
+            datetime: lambda v: v.strftime('%Y-%m-%d %H:%M:%S')
+        }
+
+
+class UserWithdrawIn(BaseModel):
+    user_id: int
+    amount: Money = Field(..., example="0.0000")
+    wallet: str
+    initData: str
+
+
+class UserWithdrawOut(BaseModel):
+    status: int = Field(1, example=1)
+    message: str = Field("Withdrawal request submitted successfully", example="Withdrawal request submitted successfully")
+    time: datetime
+
+    class Config:
+        json_encoders = {
+            datetime: lambda v: v.strftime('%Y-%m-%d %H:%M:%S')
+        }
+
+
+class UserMessage(BaseModel):
+    status: int = Field(1, example=1)
+    message: str = Field("Message craeted successfully", example="Message created successfully")
+    id: str
+    expiration_date: datetime
 
     class Config:
         json_encoders = {

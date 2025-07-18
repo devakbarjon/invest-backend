@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     database_url: str
     bot_token: str
     bot_channel_id: int
+    admin_chat_id: int
     secret_key: str
     environment: str = ENV
     algorithm: str = "HS256"

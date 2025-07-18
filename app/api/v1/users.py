@@ -1,17 +1,18 @@
 from datetime import datetime, timedelta
+from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db
-from app.models.schemas.users import UserIn, UserOut, UserBuyCardIn, UserBuyCardOut, UserActiveCardOut
+from app.models.schemas.users import UserIn, UserOut, UserBuyCardIn, UserBuyCardOut, UserActiveCardOut, UserWithdrawIn, UserWithdrawOut, UserMessage
 from app.models.user import User
 from app.models.card import Card
 from app.models.user_card import UserCard
 from app.services.bot.bot_auth import authenticate_user
 from app.core.config import settings
-
 from app.logging_config import logger
 from app.services.bot.bot_check_sub import check_bot_subscription
+from app.services.bot.bot_base import bot
 
 router = APIRouter(
     prefix="/api/v1/users",
@@ -179,3 +180,99 @@ async def active_card(
         time=datetime.now(),
         new_time=user_card.next_cycle
     )
+
+
+@router.post("/withdrawalTon", response_model=UserWithdrawOut)
+async def withdrawal_ton(
+    user_withdraw_in: UserWithdrawIn,
+    db: AsyncSession = Depends(get_db)
+):
+    user_id = user_withdraw_in.user_id
+    amount = user_withdraw_in.amount
+    init_data = user_withdraw_in.initData
+    wallet_address = user_withdraw_in.wallet
+
+    # Check if the user exists
+    user = await authenticate_user(init_data=init_data, user_id=user_id)
+
+    if user.get("success") is False:
+        raise HTTPException(status_code=400, detail=user.get("message", "Authentication failed"))
+    
+    user: User = user.get("user")
+
+    if amount <= 0:
+        raise HTTPException(status_code=400, detail="Withdrawal amount must be greater than zero")
+    
+    if user.balance_payments_ton < Decimal(amount):
+        raise HTTPException(status_code=400, detail="Insufficient balance for withdrawal")
+    
+    try:
+        await bot.send_message(
+            chat_id=settings.admin_chat_id,
+            text=f"Withdrawal request from user {user.user_id} for amount {amount} TON to <code>{wallet_address}</code>.",
+            parse_mode="html"
+        )
+    except Exception as e:
+        logger.error(f"Failed to send withdrawal request message: {e}")
+        raise HTTPException(status_code=500, detail="Failed to request withdrawal, please try again later.")
+    
+    # Update user's balance
+    user.balance_payments_ton -= Decimal(amount)
+    db.add(user)
+    await db.commit()
+    await db.refresh(user)
+
+    return UserWithdrawOut(
+        success=1,
+        message="Withdrawal request submitted successfully",
+        time=datetime.now()
+    )
+
+
+@router.get("/message/user_id={user_id}", response_model=UserMessage)
+async def get_referral_message(user_id: int):
+    """
+    Returns a referral message for sharing.
+    """
+    if not user_id:
+        raise HTTPException(status_code=400, detail="User ID is required")
+    
+    try:   
+        inline_query_result = {
+            "id": "1",
+            "type": "photo",
+            "parse_mode": "HTML",
+            "caption": "🐸 <b>TonLandia App — Play and Earn TON 💎!</b>\n\n‼️ Join now and start earning TON:",
+            "photo_url": "https://www.api-nodeland.com/refimg.jpg",
+            "thumbnail_url": "https://www.api-nodeland.com/refimg.jpg",
+            "reply_markup": {
+                "inline_keyboard": [
+                    [
+                        {
+                            "text": "🐸 Play And Meme",
+                            "url": f"https://t.me/TONlandiaBot/game?startapp={user_id}"
+                        }
+                    ]
+                ]
+            }
+    }
+
+        prepared_inline_message = await bot.save_prepared_inline_message(
+            user_id,
+            inline_query_result,
+            allow_user_chats=True,
+            allow_bot_chats=False,
+            allow_group_chats=True,
+            allow_channel_chats=False
+        )
+
+        return UserMessage(
+            status=1,
+            message="Referral message prepared successfully",
+            id=prepared_inline_message.id,
+            expiration_date=prepared_inline_message.expiration_date
+        )
+    
+    except Exception as e:
+        logger.error(f"Failed to send referral message: {e}")
+        raise HTTPException(status_code=500, detail="Failed to send referral message, please try again later.")

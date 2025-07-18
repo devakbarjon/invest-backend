@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, ARRAY, BigInteger
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, ARRAY, BigInteger, Numeric
 from sqlalchemy.sql import func
 
 from app.db.database import Base
@@ -8,6 +8,7 @@ class Task(Base):
     __tablename__ = "tasks"
 
     id = Column(Integer, primary_key=True, index=True)
+    reward = Column(Numeric(precision=20, scale=4), default=0.001)  # Reward for completing the task
     name = Column(String, nullable=False)
     description = Column(String, nullable=True)  # Optional description
     chat_id = Column(BigInteger, nullable=False)  # Chat ID for the task
@@ -21,7 +22,8 @@ class Task(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     def __init__(
-            self, 
+            self,
+            reward: float,
             name: str, 
             link: str, 
             type: str, 
@@ -30,6 +32,7 @@ class Task(Base):
             pin: bool = True
             ):
        
+        self.reward = reward
         self.name = name
         self.link = link
         self.type = type
