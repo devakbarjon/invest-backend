@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.db.database import engine, Base, fake_cards_generator, get_db
 from app.logging_config import logger
 from app.api.v1 import tasks, users, cards
+from app.services.bot.bot_base import bot
 
 async def init_models():
     async with engine.begin() as conn:
@@ -17,7 +18,8 @@ async def lifespan(app: FastAPI):
     await init_models()  # Initialize database models
     async for db in get_db():
         await fake_cards_generator(db=db)
-    yield 
+    yield
+    await bot.session.close()
     logger.info("Shutting down...")
 
 

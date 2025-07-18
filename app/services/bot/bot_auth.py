@@ -12,7 +12,7 @@ from app.models.user import User
 from app.core.config import settings
 from app.db.database import get_db
 
-async def authenticate_user(init_data: str, start_param: str | int | None, user_id: str | int) -> dict:
+async def authenticate_user(init_data: str, user_id: str | int, start_param: str | int | None=0) -> dict:
     """
     Authenticates a user using Telegram Web App initData.
     

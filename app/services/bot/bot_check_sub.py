@@ -1,10 +1,5 @@
-from aiogram import Bot
-from app.core.config import settings
-
 from app.logging_config import logger
-
-
-bot = Bot(token=settings.bot_token)
+from .bot_base import bot
 
 
 async def check_bot_subscription(user_id: int, channel_id: int) -> int:
@@ -16,13 +11,13 @@ async def check_bot_subscription(user_id: int, channel_id: int) -> int:
         channel_id (int): The Telegram channel ID to check subscription against.
     
     Returns:
-        int: 1 if the user is subscribed, 0 otherwise.
+        int: 0 if the user is subscribed, 0 otherwise.
     """
     try:
         member = await bot.get_chat_member(chat_id=channel_id, user_id=user_id)
         if member.status in ["member", "administrator", "creator"]:
-            return 1
-        return 0
+            return 0
+        return 1
     except Exception as e:
         logger.error(f"Error checking subscription for user {user_id}: {e}")
-        return 0
+        return 1

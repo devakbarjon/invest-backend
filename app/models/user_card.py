@@ -19,5 +19,11 @@ class UserCard(Base):
     user = relationship("User", back_populates="user_cards")
     card = relationship("Card", back_populates="user_cards")
 
+    def __init__(self, user_id: int, card_id: int, next_cycle: DateTime, status: bool = True):
+        self.user_id = user_id
+        self.card_id = card_id
+        self.next_cycle = next_cycle
+        self.status = status
+
     def __repr__(self):
         return f"<UserCard(user_id={self.user_id}, card_id={self.card_id})>"

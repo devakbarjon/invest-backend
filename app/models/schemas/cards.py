@@ -17,7 +17,7 @@ class CardOut(BaseModel):
 
     @field_serializer('cycle_reward')
     def format_cycle_reward(self, value: Decimal, _info):
-        # округляем до 6 знаков после запятой
+        
         return f"{value:.6f}"
 
     class Config:

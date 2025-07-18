@@ -11,7 +11,7 @@ router = APIRouter(
 )
 
 # Get all tasks for user
-@router.get("/", response_model=list[TaskOut])
+@router.post("/", response_model=list[TaskOut])
 async def get_tasks(
     db: AsyncSession = Depends(get_db),
     x_init_data: int = Header(..., alias="X-init-data"),   #  <‑‑ Init data for authentication

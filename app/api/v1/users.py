@@ -1,9 +1,9 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db
-from app.models.schemas.users import UserIn, UserOut
+from app.models.schemas.users import UserIn, UserOut, UserBuyCardIn, UserBuyCardOut, UserActiveCardOut
 from app.models.user import User
 from app.models.card import Card
 from app.models.user_card import UserCard
@@ -71,7 +71,111 @@ async def get_user(
     user_data["referral_income_level3"] = str(user.referral_income_level3)
     user_data["withdrawal_ton"] = str(user.withdrawal_ton)
     user_data["deposit_ton"] = str(user.deposit_ton)
-    user_data["date"] = datetime.now().isoformat().split(".")[0].replace("T", " ")
+    user_data["date"] = datetime.now()
     user_data["sub_channel"] = await check_bot_subscription(user_id, settings.bot_channel_id)
 
     return UserOut.model_validate(user_data)
+
+
+@router.post("/buyCard", response_model=UserBuyCardOut)
+async def buy_card(
+    user_buy_card_in: UserBuyCardIn,
+    db: AsyncSession = Depends(get_db)
+):
+    user_id = user_buy_card_in.user_id
+    card_id = user_buy_card_in.card_id
+    init_data = user_buy_card_in.initData
+
+    # Check if the user exists
+    user = await authenticate_user(init_data=init_data, user_id=user_id)
+
+    if user.get("success") is False:
+        raise HTTPException(status_code=400, detail=user.get("message", "Authentication failed"))
+    
+    user: User = user.get("user")
+
+    # Check if the card exists
+    card: Card = await db.get(Card, card_id)
+
+    if not card:
+        raise HTTPException(status_code=404, detail="Card not found")
+    
+    result = await db.execute(
+        select(UserCard).where(UserCard.user_id == user.id, UserCard.card_id == card.id, UserCard.status == True)
+    )
+    user_card = result.scalars().first()
+
+    if user_card:
+        raise HTTPException(status_code=400, detail="Card already purchased")
+    
+    if user.balance_ton < card.cost:
+        raise HTTPException(status_code=400, detail="Insufficient balance to buy the card")
+    
+    # Update user's balance
+    user.balance_ton -= card.cost
+    db.add(user)
+    await db.commit()
+    await db.refresh(user)
+
+    # Create a new UserCard
+    user_card = UserCard(
+        user_id=user.user_id,
+        card_id=card.id,
+        next_cycle=datetime.now() + timedelta(hours=card.cycle_time),
+        status=True
+    )
+    db.add(user_card)
+    await db.commit()
+    await db.refresh(user_card)
+
+    return UserBuyCardOut(
+        success=1,
+        message="Card purchased successfully",
+        time=datetime.now(),
+        new_time= user_card.next_cycle
+    )
+
+
+@router.post("/activeCard", response_model=UserActiveCardOut)
+async def active_card(
+    user_active_card_in: UserBuyCardIn,
+    db: AsyncSession = Depends(get_db)
+):
+    user_id = user_active_card_in.user_id
+    card_id = user_active_card_in.card_id
+    init_data = user_active_card_in.initData
+
+    # Check if the user exists
+    user = await authenticate_user(init_data=init_data, user_id=user_id)
+
+    if user.get("success") is False:
+        raise HTTPException(status_code=400, detail=user.get("message", "Authentication failed"))
+    
+    user: User = user.get("user")
+
+    # Check if the card exists
+    card: Card = await db.get(Card, card_id)
+
+    if not card:
+        raise HTTPException(status_code=404, detail="Card not found")
+    
+    result = await db.execute(
+        select(UserCard).where(UserCard.user_id == user.id, UserCard.card_id == card.id, UserCard.status == True)
+    )
+    user_card = result.scalars().first()
+
+    if not user_card:
+        raise HTTPException(status_code=404, detail="User does not own this card")
+    
+    # Activate the card
+    user_card.next_cycle = datetime.now() + timedelta(hours=card.cycle_time)
+    db.add(user_card)
+    await db.commit()
+    await db.refresh(user_card)
+
+    return UserActiveCardOut(
+        success=1,
+        message="Card activated successfully",
+        time=datetime.now(),
+        new_time=user_card.next_cycle
+    )
