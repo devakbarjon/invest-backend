@@ -2,7 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db
-from app.models.schemas.tasks import TaskCheckIn, TaskOut, TaskCheck
+from app.models.schemas.tasks import TaskCheckIn, TaskOut, TaskCheck, TaskCompleted
+from app.models.schemas.users import UserIn
 from app.models.task import Task
 from app.models.user import User
 from app.services.bot.bot_auth import authenticate_user
@@ -70,3 +71,45 @@ async def check_task(task_in: TaskCheckIn, db: AsyncSession = Depends(get_db)):
         id=task.id,
         status=1
     )
+
+
+@router.post("/getTasksUser", response_model=TaskCompleted)
+async def get_tasks_user(
+    user_in: UserIn,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get all tasks completed by the user.
+    """
+
+    init_data = user_in.initData
+    user_id = user_in.user_id
+
+    user = await authenticate_user(
+        init_data=init_data,
+        user_id=user_id
+    )
+
+    if user.get("success") is False:
+        raise HTTPException(status_code=400, detail=user.get("message", "Authentication failed"))
+    
+    user: User = user.get("user")
+
+    result = await db.execute(
+        select(Task).where(Task.users.contains([user_id]))
+    )
+    
+    tasks: list[Task] = result.scalars().all()
+
+    completed_tasks = []
+
+    for task in tasks:
+        completed_tasks.append(
+            {
+                "id": task.id,
+                "user_id": user_id,
+                "tasks_id": task.id
+            }
+        )
+
+    return TaskCompleted(tasks=completed_tasks)
