@@ -15,7 +15,7 @@ class UserOut(BaseModel):
     lang: Optional[str]
 
     # balances
-    balance_ton:      Money = Field(..., example="0.0000")
+    balance_ton:      Money = Field(Decimal("0.00000"), example="0.0000")
     balance_payments_ton: Money = Field(..., example="0.0000")
     withdrawal_ton:   Money = Field(..., example="0.0000")
     deposit_ton:      Money = Field(..., example="0.0000")

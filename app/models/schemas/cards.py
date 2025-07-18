@@ -17,8 +17,8 @@ class CardOut(BaseModel):
 
     @field_serializer('cycle_reward')
     def format_cycle_reward(self, value: Decimal, _info):
-        
-        return f"{value:.6f}"
+
+        return f"{value:.4f}"
 
     class Config:
         orm_mode = True

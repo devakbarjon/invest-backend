@@ -32,3 +32,12 @@ class TaskCheckIn(TaskBase):
 class TaskCheck(BaseModel):
     id: int = Field(..., example=1)
     status: int = Field(1, example=1)
+
+
+class Task(BaseModel):
+    id: int
+    user_id: int
+    tasks_id: int
+
+class TaskCompleted(BaseModel):
+    tasks: List[Task]

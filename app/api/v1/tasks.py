@@ -5,7 +5,7 @@ from app.db.database import get_db
 from app.models.schemas.tasks import TaskCheckIn, TaskOut, TaskCheck
 from app.models.task import Task
 from app.models.user import User
-from backend.app.services.bot.bot_auth import authenticate_user
+from app.services.bot.bot_auth import authenticate_user
 
 router = APIRouter(
     prefix="/api/v1/tasks",
