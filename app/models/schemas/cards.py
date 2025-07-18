@@ -1,20 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional
 
-from pydantic import BaseModel, Field
-
-
-# id = Column(Integer, primary_key=True, index=True)
-# name = Column(String, nullable=False)
-# image = Column(String, nullable=False)  # Image URL for the miner
-# cost = Column(Integer, default=1)  # Cost of the miner
-# cycle_reward = Column(Numeric, default=0.02)  # Reward per cycle
-# cycle_time = Column(Integer, default=4)  # Cycle time in hours
-# frozen = Column(Boolean, default=False)  # Indicates if the miner is frozen
-# buy = Column(Boolean, default=True)  # Indicates if the miner is available for purchase
-# created_at = Column(DateTime(timezone=True), server_default=func.now())
-# updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+from pydantic import BaseModel, Field, field_serializer
 
 
 class CardOut(BaseModel):
@@ -28,9 +15,15 @@ class CardOut(BaseModel):
     buy: bool = Field(default=True, example=True)  # Indicates if the miner is available for purchase
     created_at: datetime
 
+    @field_serializer('cycle_reward')
+    def format_cycle_reward(self, value: Decimal, _info):
+        # округляем до 6 знаков после запятой
+        return f"{value:.6f}"
+
     class Config:
         orm_mode = True
         use_enum_values = True
+        from_attributes = True
 
 
 class CardIn(BaseModel):

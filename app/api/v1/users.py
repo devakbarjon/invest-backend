@@ -19,7 +19,7 @@ router = APIRouter(
 )
 
 
-@router.post("/", response_model=UserOut)
+@router.post("/getUser", response_model=UserOut)
 async def get_user(
     user_in: UserIn,
     db: AsyncSession = Depends(get_db)

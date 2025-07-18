@@ -14,7 +14,7 @@ router = APIRouter(
 )
 
 
-@router.post("/", response_model=CardOut)
+@router.post("/", response_model=list[CardOut])
 async def get_all_cards(
     card_in: CardIn,
     db: AsyncSession = Depends(get_db)
@@ -42,4 +42,4 @@ async def get_all_cards(
     if not cards:
         raise HTTPException(status_code=404, detail="No cards found")
     
-    return [CardOut.model_validate(card) for card in cards]
+    return [CardOut.model_validate(card, from_attributes=True) for card in cards]
