@@ -1,5 +1,6 @@
 from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException, Request
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -42,6 +43,16 @@ async def ton_webhook(request: Request, db: AsyncSession = Depends(get_db)):
                     sender = data["from"]
                     tx_hash = data["tx_hash"]
 
+                    if tx_hash:
+                        existing_transaction = await db.execute(
+                            select(Transaction).where(
+                                Transaction.transaction_id == tx_hash
+                            )
+                        )
+                        if existing_transaction.scalars().first():
+                            logger.info(f"Transaction {tx_hash} already exists.")
+                            return {"status": "ok"}
+
                     user.balance_ton += Decimal(amount_ton)
                     db.add(user)
                     await db.commit()
@@ -73,7 +84,6 @@ async def ton_webhook(request: Request, db: AsyncSession = Depends(get_db)):
 
                     except Exception as e:
                         logger.error(f"Failed to send message to user {user_id}: {e}")
-                        raise HTTPException(status_code=500, detail="Failed to send notification to user.")
 
 
     return {"status": "ok"}
