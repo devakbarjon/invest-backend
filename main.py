@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.db.database import engine, Base, fake_cards_generator, get_db
 from app.logging_config import logger
-from app.api.v1 import tasks, users, cards
+from app.api.v1 import tasks, users, cards, webhooks
 from app.services.bot.bot_base import bot
 
 async def init_models():
@@ -35,6 +35,10 @@ app.include_router(
 
 app.include_router(
     cards.router, tags=["Cards"]
+)
+
+app.include_router(
+    webhooks.router, tags=["Webhooks"]
 )
 
 app.add_middleware(
