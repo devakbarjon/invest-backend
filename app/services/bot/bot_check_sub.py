@@ -11,7 +11,7 @@ async def check_bot_subscription(user_id: int, channel_id: int) -> int:
         channel_id (int): The Telegram channel ID to check subscription against.
     
     Returns:
-        int: 0 if the user is subscribed, 0 otherwise.
+        int: 0 if the user is subscribed, 1 otherwise.
     """
     try:
         member = await bot.get_chat_member(chat_id=channel_id, user_id=user_id)
