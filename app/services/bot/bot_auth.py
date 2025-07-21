@@ -24,6 +24,9 @@ async def authenticate_user(init_data: str, user_id: str | int, start_param: str
         dict: User information if authentication is successful, None otherwise.
     """
     # Validate the initData
+    if not init_data:
+        return {"success": False, "message": "initData is empty!"}
+    
     def validate_init_data(init_data: str) -> bool:
         status = check_webapp_signature(settings.bot_token, init_data)
         return status
