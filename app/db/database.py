@@ -33,7 +33,7 @@ async def fake_cards_generator(db: AsyncSession) -> None:
     data = {
         1: {
             "name": "USDC",  # Топ 7
-            "image": "https://example.com/card_1.png",
+            "image": "/img/1.png",
             "cost": 1,
             "cycle_reward": 0.02,
             "cycle_time": 2,
@@ -43,7 +43,7 @@ async def fake_cards_generator(db: AsyncSession) -> None:
         },
         2: {
             "name": "SOL",  # Топ 6
-            "image": "https://example.com/card_2.png",
+            "image": "img/2.png",
             "cost": 5,
             "cycle_reward": 0.04,
             "cycle_time": 4,
@@ -53,7 +53,7 @@ async def fake_cards_generator(db: AsyncSession) -> None:
         },
         3: {
             "name": "BNB",  # Топ 5
-            "image": "https://example.com/card_3.png",
+            "image": "img/3.png",
             "cost": 20,
             "cycle_reward": 0.4,
             "cycle_time": 6,
@@ -63,7 +63,7 @@ async def fake_cards_generator(db: AsyncSession) -> None:
         },
         4: {
             "name": "XRP",  # Топ 4
-            "image": "https://example.com/card_4.png",
+            "image": "img/4.png",
             "cost": 50,
             "cycle_reward": 1,
             "cycle_time": 6,
@@ -73,7 +73,7 @@ async def fake_cards_generator(db: AsyncSession) -> None:
         },
         5: {
             "name": "USDT",  # Топ 3
-            "image": "https://example.com/card_5.png",
+            "image": "img/5.png",
             "cost": 100,
             "cycle_reward": 2.5,
             "cycle_time": 8,
@@ -83,7 +83,7 @@ async def fake_cards_generator(db: AsyncSession) -> None:
         },
         6: {
             "name": "ETH",  # Топ 2
-            "image": "https://example.com/card_6.png",
+            "image": "/img/6.png",
             "cost": 200,
             "cycle_reward": 5,
             "cycle_time": 12,
@@ -93,7 +93,7 @@ async def fake_cards_generator(db: AsyncSession) -> None:
         },
         7: {
             "name": "BTC",  # Топ 1
-            "image": "https://example.com/card_7.png",
+            "image": "img/7.png",
             "cost": 300,
             "cycle_reward": 7,
             "cycle_time": 12,

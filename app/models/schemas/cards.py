@@ -7,13 +7,13 @@ from pydantic import BaseModel, Field, field_serializer
 class CardOut(BaseModel):
     id: int
     name: str
-    image: str  # Image URL for the miner
-    cost: int = Field(default=1, example=1)  # Cost of the miner
+    image: str  # Image URL for the card
+    cost: int = Field(default=1, example=1)  # Cost of the card
     cycle_reward: Decimal = Field(default=0.02, example=0.02)  # Reward per cycle
     cycle_time: int = Field(default=4, example=4)  # Cycle time in hours
-    profit: int = Field(default=5, example=5)  # Total profit from the miner in percentage
-    frozen: bool = Field(default=False, example=False)  # Indicates if the miner is
-    buy: bool = Field(default=True, example=True)  # Indicates if the miner is available for purchase
+    profit: int = Field(default=5, example=5)  # Total profit from the card in percentage
+    frozen: bool = Field(default=False, example=False)  # Indicates if the card is
+    buy: bool = Field(default=True, example=True)  # Indicates if the card is available for purchase
     created_at: datetime
 
     @field_serializer('cycle_reward')
