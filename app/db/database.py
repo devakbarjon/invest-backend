@@ -43,7 +43,7 @@ async def fake_cards_generator(db: AsyncSession) -> None:
         },
         2: {
             "name": "SOL",  # Топ 6
-            "image": "img/2.png",
+            "image": "/img/2.png",
             "cost": 5,
             "cycle_reward": 0.04,
             "cycle_time": 4,
@@ -53,7 +53,7 @@ async def fake_cards_generator(db: AsyncSession) -> None:
         },
         3: {
             "name": "BNB",  # Топ 5
-            "image": "img/3.png",
+            "image": "/img/3.png",
             "cost": 20,
             "cycle_reward": 0.4,
             "cycle_time": 6,
@@ -63,7 +63,7 @@ async def fake_cards_generator(db: AsyncSession) -> None:
         },
         4: {
             "name": "XRP",  # Топ 4
-            "image": "img/4.png",
+            "image": "/img/4.png",
             "cost": 50,
             "cycle_reward": 1,
             "cycle_time": 6,
@@ -73,7 +73,7 @@ async def fake_cards_generator(db: AsyncSession) -> None:
         },
         5: {
             "name": "USDT",  # Топ 3
-            "image": "img/5.png",
+            "image": "/img/5.png",
             "cost": 100,
             "cycle_reward": 2.5,
             "cycle_time": 8,
@@ -93,7 +93,7 @@ async def fake_cards_generator(db: AsyncSession) -> None:
         },
         7: {
             "name": "BTC",  # Топ 1
-            "image": "img/7.png",
+            "image": "/img/7.png",
             "cost": 300,
             "cycle_reward": 7,
             "cycle_time": 12,
